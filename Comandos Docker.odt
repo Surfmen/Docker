@@ -1,0 +1,483 @@
+******* Arrancar y parar Docker *******
+    # sudo dockerd 
+    # systemctl status docker
+    # systemctl start docker
+    # systemctl stop docker
+    # service docker start
+    # service docker status
+    # service docker stop
+    # service docker enable
+
+******* Activar el Docker  para que arranque de forma automatica **********
+    # systemctl enable docker
+
+    # docker info
+    # docker run hello-word
+    # docker images  <- Imagenes en local
+    # docker ps  <- Muestra los contenedores funcionando
+    # docker ps -a  <- Muestra los contenedores parados
+    # docker ps --help
+    # docker ps -a -n 3 -s
+    # docker ps -a -f "name=adoring_ardinghelli"
+
+    # docker run -it <- Para que entre en modo interactivo
+    # docker run -it ubuntu
+    # exit <- Salir del bash
+    # uname -a <- Para mostrar información del OS
+
+    # docker start -i 66a61be02a01 <-Para entrar en modo interativo y el id del contenedor
+
+# Contenedor nginx (Contenedor web para entornos de desarrollo)
+***** Arancar un contenedo nginx en backgraund ****
+    # docker run -d nginx
+
+    # docker run -it ubuntu --platform=linux
+
++++++++++ para convertirse en root +++++++++++
+    # su - root
+    # sudo -i
+    # gksu nautilus
+
+# Para descargar una imagen y no instalarla con el tag trusty
+# bash el el comando que quiero lanzar cuando se cree
+    # docker pull -it ubuntu:trusty bash
+
+# Borrar contenedores "docker rm ID o el Name"
+    # docker stop 73a1f0c69968 <- paramos para poder eliminarla imagen
+    # docker rm 73a1f0c69968
+
+# Borra Imagenes "docker rmi ID o el Name"
+    # docker rmi 1d622ef86b13
+    # docker rmi nginx
+    # docker rmi -f nginx <- Para forzar la eliminación
+
+# ejecutar un comando sobre un contenedor que se esta ejecutando
+    # docker run -it --name mi_ubuntu ubuntu bash  
+    # ls -ltr
+    # docker exec mi_ubuntu echo hola
+    # docker exec -it mi_ubuntu bash <- Para logarse en el bash
+
+
+    # docker pull python <- Solo descargamos la imagen
+    # docker run -it --name mi_python python
+    # docker exec -it my_python bash <- para entrar en modo bash en el contenedor
+
+# ***** Comando para gestionar Imagenes ******
+    # docker image 
+
+# ***** Comando para gestionar los Containers *******
+    # docker container
+    # docker container ls --help <- Para pedir la ayuda de ls container
+
+# ******** Comandos logs, kill ***********
+    # docker run -d ubuntu sh -c "while true; do date; done"
+        # El -d es para modo backgraund
+
+    # docker logs 7c1ec810ae3d <-Me mostraria todo lo creado
+    # docker logs 7c1ec810ae3d --tail 10 <-Me mostrarial las ultimas 10 lineas
+    # docker logs 7c1ec810ae3d -f <-Me mostrarial todo lo que se vaya generando
+
+    # docker kill 7c1ec810ae3d <-Matamos el contenedor, lo paramos
+
+# ********* Comados Top, stats ************
+    # docker top 31c696be3ad8 <- Para ver el proceso que mas consume
+    # docker stats 31c696be3ad8 <- Para ver el uso de memoria procesador y demas
+
+# ********* Comado docker inspect **********
+# docker inspect 31c696be3ad8 <- Recuperar información de las caracteristicas del contenedor 
+
+    # docker inspect 31c696be3ad8 > container1.txt
+
+# ******** Puertos en docker ****************
+    # docker pull nginx
+    # docker run -d -P nginx <- La P es para hacer todos los puertos publicos desde fuera
+    # docker run -d --name nginx2 -p 8080:80 nginx 
+
+# ******** Redes en docker *****************
+    # docker network <- Información de las redes y las redes asociados a la misma
+    # docker inspect nginx2 | grep IPAd <- Nos muestra la ip del contenedor
+    # docker network inspect bridge <- Para ver información de la red bridge
+    # docker network inspect bridge > bridgeNet.txt
+
+# ******** Para crear una red ************
+    # docker network create --help
+    # docker network create net1
+    # nmcli con <- Para ver las conexión que tenemos dentro del sistema operativo
+    # ip a | more
+    # docker inspect red1 > red1.txt
+    # docker network create --subnet=192.168.0.0/16 red2
+    # docker network create --subnet=192.168.0.0/16 --gateway=192.168.0.1 red2
+
+# ******** Asociar contenedores a una red ***********
+    # docker run -it --name ubuntua --network red1 ubuntu
+    # docker inspect ubuntua | grep IPAdd
+    # docker run -it --name ubuntub --network red1 ubuntu
+    # docker inspect ubuntua | grep IPAdd
+    # docker network connect red2 ubuntua <-- Le estamos diciendo al ubuntua que añada
+            # y se conecte a la red1 y asi tendra dos redes
+    # docker network disconnect red2 ubuntua <- Le desconectariamos de la red2
+    # apt-get install iputils-ping
+
+# ********* Enlazar contenedores --link *************
+    # docker ps -a | wc -l
+    # docker ps -q <- Sacamos lo Ids
+    # docker rm `docker ps -aq` <- Eliminados todos los contenedores
+
+    **** container busybox (buscar en dockerhub) lo usaremos para probar componentes
+    # docker run -it --rm --name b1 busybox
+        # cat /etc/hosts <- Para ver la ip
+    # docker run -it --rm --name b2 busybox
+        # cat /ect/hosts <- Para ver la Ip
+
+    # docker run -it --rm --name b3 --link b1:maquina1 busybox <- Enlazamos el b3 con el b1
+        # cat /ect/hosts <- Para ver la Ip
+    
+# ******** Enlazar contenedores en redes personalizadas **********
+    # docker run -d --name mysql_server --rm --network red1 -e  MYSQL_ROOT_PASSWORD=secret mysql
+    # docker exec -it mysql_server bash
+        # mysql -u root -p
+    # Ahora creamos el cliente para enlazar al servidor
+    # docker run -it --name mysql_client --rm --network red1 mysql bash
+    # mysql -h mysql_server -u root -p <- Nos conectamos al contenedor ya creado
+
+# ******** Enlazar WordPress y MySQL ****************
+    # docker run -d --name mysql_wp --rm --network red1 -e  MYSQL_ROOT_PASSWORD=secret mysql:5.7.30
+    # docker run -d --name wp --rm --network red1 -e WORDPRESS_DB_HOST=mysql_wp -e WORDPRESS_DB_PASSWORD=secret -p 8080:80 wordpress
+
+# ******** Borrar una Red ****************
+    # docker network rm --help
+    # docker network rm {NAME}
+
+# ********* INTRODUCCIÓN A VOLUMENES ***************
+    # ********* Crear un Contenedor con volumen ***********
+    #  cd /var/lib/docker/volumes <- Donde se crean los VOLUMENES
+    # docker run -it -v /datos --name ubuntu1 ubuntu bash
+    # ls -l <- Se ve el directorio creado y volumen creado en el directorio volumes de docker
+    # cd /datos/
+    # touch f1.txt
+
+    # ******** Visualizar información de volumenes ********
+        # docker volume --help
+        Manage volumes
+
+        Commands:
+        create      Create a volume
+        inspect     Display detailed information on one or more volumes
+        ls          List volumes
+        prune       Remove all unused local volumes
+        rm          Remove one or more volumes
+
+        # docker volume ls
+        # docker volume inspect f88cd6594888a645b39c6862d28e9a749dc877bfbb3aa53d9e83faaacbb5d9c
+        
+    # ******** Compartir directorios con el host **********
+        # mkdir dir1
+        # pwd    
+        # Compartinos el directorio /Users/sterleira/dir1:/dir1 con el contenedor ubuntu2
+        # docker run -it -v /Users/sterleira/dir1:/dir1 --name ubuntu2 ubuntu
+        # touch f1
+
+    # ********* Compartir volumenes con otros contenedores ***********
+        # cd /var/lib/docker/volumes/
+        # ls -l
+        # ls 
+        # docker run -it -v /datos --name ubuntu4 ubuntu bash 
+        # docker run -it --name ubuntu5 --volumes-from ubuntu4 ubuntu bash
+
+    # *********** Crear volumenes manualmente *************
+        # docker volume create vol1
+        # Para vincular a un volumen creado manualmente
+        # docker run -it --name ubuntu7 -v vol1:/dir1 ubuntu bash
+        # docker volume inspect vol1
+        # docker inspect ubuntu7 > ubuntu7.txt
+        # docker run -it --name ubuntu8 -v vol1:/datos:ro ubuntu bash <- ro es para solo lectura bash
+    
+    # *********** Borrar volumenes *************
+        # docker volume rm f88cd6594888a645b39c6862d28e9a749dc877bfbb3aa53d9e83faaacbb5d9c2
+        # docker volume prune <- Volumenes sin utilizar
+        # docker volume ls <- Para mostrar los que quedan
+    
+    # *********** Introduccion a las images ********
+        # Capas
+            1º Bootfs(lectura)
+            2º Rootfs(lectura)
+            3º N capas de imagen(lectura)
+            4º El Contenedor (lectura-escritura)
+    
+    # ********** Modificar un Contenedor **********       
+
+        # docker run -it --name ubuntu1 ubuntu bash
+        # wget http://www.google.es
+        # bash: wget: command not found
+        # apt-get update
+        # apt-get install wget
+        # docker start -i ubuntu1 <- Para arrancarlo
+        # docker diff ubuntu1 <- Me dice los cambios que ha tenido ese contenedor
+        
+    # ********** Crear una imagen manualmente "docker commint" ************    
+        # docker commit ubuntu1 mi_ubuntu
+        # docker images
+        # docker run -it mi_ubuntu bash
+
+    # ********** Dockerfile para construir imagenes *************
+        # mkdir imagen_python
+        # cd imagen_python
+        # pwd
+        # vi Dockerfile
+        # FROM ubuntu < Que me carge la imagen inicial de ubuntu 
+        # RUN apt-get update
+        # RUN apt-get install -y python
+        
+        # docker build -t imagen_python .
+        # docker images
+        # docker run -it image_python python <- Probamos la imagen creada
+        # cat Dockerfile <- Vemos el fichero
+
+        # ******* Comando RUN del Dockerfile **********
+        # docker image --help
+        # docker image history image_python
+        # Añadimos al archivo Dockerfile:
+            RUN echo 1.0 >> /etc/version && apt-get install -y git \
+            && apt-get install -y iputils-ping
+        # docker build -t image_python:v1 .
+        # docker images
+        # docker run -it --rm image_python:v1 bash
+        root@07e45e7410b6:/# cat /etc/version
+        1.0
+        root@07e45e7410b6:/# git
+        root@07e45e7410b6:/# ping
+        
+        # ******* Comando CMD del Dockerfile **********
+        # CMD es el comando por defecto del contenedor
+        # Añadimos al Dockerfile:
+            CMD echo "Welcome to this container"
+        # docker build -t image:v1 .
+        # docker run -it --rm image:v1
+        Welcome to this container
+        # docker image rm image:v1 o docker rmi image:v1
+        # docker images
+        # vi Dockerfile, cambiamos por esto:
+            # lo anterior echo "Welcome to this container"
+            # se ejecutaba por el comando /bin/sh -c
+            # en cambio este se ejecuta com exec, que permite hacer
+            # ciertas cosas
+            CMD ["echo","Welcome to this container"]
+
+        # docker build -t image:v2 .
+        # docker run -it --rm image:v2
+        # docker image history image:v2
+        # docker rmi image:v2
+        # vi Dockerfile , cambiamos por esto:
+            CMD /bin/bash
+        # Funciona, pero no es la forma correcta, esta si lo es:
+        # vi Dockerfile , cambiamos por esto:
+            CMD ["/bin/bash"]    
+        # docker rmi image:v2
+        # docker build -t image:v2 .
+        # docker run -it --rm image:v2
+        # docker image history image:v2
+
+        # ******* Comando ENTRYPOINT del Dockerfile **********
+        # Ejecuta algo cuando arrancamos el contenedor,
+        # Nos permite blindar ese comando, que se ejecute siempre,
+        # cosa que con CMD no pasa.
+        # cat Dockerfile # Visualizamos el archivo
+        # docker build -t image:v2 .
+        # docker run -it --rm image:v2
+            root@7563a2df44f1:/#
+        # docker run -it --rm image:v2 ls 
+            bin   dev  home  lib32  libx32  mnt  proc  run   srv  tmp  var
+            boot  etc  lib   lib64  media   opt  root  sbin  sys  usr
+        # lo anterior no pasaria con ENTRYPOINT
+        # vi Dockerfile , cambiamos por esto:
+            ENTRYPOINT ["/bin/bash"]
+        # docker build -t image:v2 .
+        # docker run -it --rm image:v2 ls 
+        # docker run -it --rm image:v2 df -h
+        /usr/bin/ls: /usr/bin/ls: cannot execute binary file
+        # vi Dockerfile , cambiamos por esto:
+            ENTRYPOINT ["df -h"]
+        # docker rmi image:v2    
+        # docker build -t image:v2 .
+        # docker run -it --rm image:v2
+        # docker run -it --rm image:v2 -h
+        # docker run -it --rm image:v2 --help
+
+        # ******* Comando WORKDIR del Dockerfile **********
+        #vi Dockerfile , cambiamos por esto:
+            FROM ubuntu
+            RUN apt-get update
+            RUN apt-get install -y python
+            RUN echo 1.0 >> /etc/version && apt-get install -y git \
+                    && apt-get install -y iputils-ping
+            RUN mkdir /datos1
+            WORKDIR /datos1
+            RUN touch f1.txt
+            # Para que entre en el shell
+            ENTRYPOINT ["/bin/bash"]
+        # docker build -t image:v3 .
+        # docker run -it --rm image:v3
+
+        # ******* Comando COPY del Dockerfile **********
+        #docker rmi image:v3
+        #vi Dockerfile , cambiamos por esto:
+            FROM ubuntu
+            RUN apt-get update
+            RUN apt-get install -y python
+            RUN echo 1.0 >> /etc/version && apt-get install -y git \
+                    && apt-get install -y iputils-ping
+            RUN mkdir /datos1
+            WORKDIR /datos1
+            RUN touch f1.txt
+
+            RUN mkdir /datos2
+            WORKDIR /datos2
+            RUN touch f2.txt
+
+            ## COPY ##
+            COPY index.html .
+            COPY app.log /datos1
+
+            # Para que entre en el shell
+            ENTRYPOINT ["/bin/bash"]
+        # docker build -t image:v4 .
+        # docker run -it --rm image:v4
+
+        # ******* Comando ADD del Dockerfile **********
+        #docker rmi image:v3
+        #vi Dockerfile , cambiamos por esto:
+            FROM ubuntu
+            RUN apt-get update
+            RUN apt-get install -y python
+            RUN echo 1.0 >> /etc/version && apt-get install -y git \
+                    && apt-get install -y iputils-ping
+            RUN mkdir /datos1
+            WORKDIR /datos1
+            RUN touch f1.txt
+
+            RUN mkdir /datos2
+            WORKDIR /datos2
+            RUN touch f2.txt
+
+            ## COPY ##
+            COPY index.html .
+            COPY app.log /datos1
+
+            ## ADD ##
+            ADD docs docs
+            ADD f* /datos1/
+            ADD f.tar .
+
+            # Para que entre en el shell
+            ENTRYPOINT ["/bin/bash"]
+        # Comprimir con tar varios archivos
+        # tar -cvf f.tar f1 f2 f3 f4 f5
+        # Visualizar contenido del archivo tar
+        # tar tvf f.tar
+        # docker rmi image:v4
+        # docker build -t image:v4 .
+        # docker run -it --rm image:v4
+
+        # ******* Comando ENV del Dockerfile (variables) **********
+        # env <-devuelve las variables de entorno
+        # echo $HOME
+        # docker run -it --rm --env x=10 image:v4
+        # env
+            HOSTNAME=e15c20bc8339
+            PWD=/datos2
+            x=10
+            HOME=/root
+            LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+            LESSCLOSE=/usr/bin/lesspipe %s %s
+            TERM=xterm
+            LESSOPEN=| /usr/bin/lesspipe %s
+            SHLVL=1
+            PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            _=/usr/bin/env
+        # echo $x
+            10
+         # Se le pueden pasar comados por una variable para usarlos en el Dockerfile   
+         # docker run -it --rm --env x=`pwd` image:v4
+         
+         # ******* Comando ARG del Dockerfile (variables) **********
+         # docker build -t image:v6 --build-arg dir3=/data3 .
+         # docker run -it --rm image:v6
+
+         ## Ejemplo con script ##
+         vi add_user.sh
+            adduser $user_docker
+
+        ## Convertirlo en ejecutable
+        #chmod +x add_user.sh
+        #ls -l add_user.sh
+        # Cambiamos el Dockerfile:
+            ## ARG ##
+            ## Permite pasar el valor al contruir la imagen ##
+            ARG dir3
+            RUN mkdir $dir3
+            ARG user
+            ENV user_docker user_docker $user
+            ADD add_user.sh /datos1
+            RUN /datos1/add_user.sh
+        
+        # docker build -t image:v6 --build-arg dir3=/data3 --build-arg user=tom .
+        # docker run -it --rm image:v6
+        # cat /etc/passwd <- Para ver el usuario creado
+        # tom:x:1000:1000:,,,:/home/tom:/bin/bash <- Aparece el usuario tom
+
+        # ******* Comando EXPOSE del Dockerfile (variables) **********
+        # Cambiamos el Dockerfile: añadimos lo siguiente
+        # cat entrypont.sh
+        # chmod +x entrypont.sh
+        # ls -l entrypont.sh
+        # docker build -t image:v7 .
+        # docker run -it --rm -p 8080:80 image:v7
+
+        # ******* Comando VOLUME del Dockerfile (variables) **********   
+        # Crear volumenes de forma automatica con Dockerfile
+        # Cambiamos el Dockerfile: añadimos lo siguiente
+        ##VOLUME##
+        ADD paginas /var/www/html
+        VOLUME ["/var/www/html"]
+
+        ## CMD ##
+        CMD /datos1/entrypoint.sh
+
+        ## ENTRYPOINT ##
+        # Para que entre en el shell
+        #ENTRYPOINT ["/bin/bash"]
+
+        # docker build -t image:v8 .
+        # docker run -it --rm -p 8080:80 --name c1 image:v8
+        # Miramos el efecto al crar un volumen, se creara con un nombre muy largo
+        # docker volume ls 
+        # entramos en el directorio cd /var/lib/docker/volumes/ ls
+        # acedemos a la pagina http://localhost:8080
+        # Ahora creamos otro contenedor con el volumen compartido del contenedor c1
+        # docker run -it --rm -p 9080:80 --volumes-from c1 --name c2 image:v8
+
+ # ******* Subir Imagenes a Dockerhub **********
+ # docker images
+ # Cambiamos el nombre a la imagen para subirla
+ # no se puede supede subir con ese nombre 
+ # docker image tag  image:v8 surfmen/image:v8
+ # docker images
+ # docker login
+ # subimos la imagen a docker hub
+ # docker push surfmen/image:v8
+ # Para bajar images de mi repositorio dockerhub
+ # docker pull surfmen/image:v8
+
+
+ # ****** Integración continua, conectar Dockerhub y github de forma automática *******
+
+
+
+
+
+
+
+
+
+
+
