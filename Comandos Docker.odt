@@ -470,7 +470,12 @@
 
 
  # ****** Integración continua, conectar Dockerhub y github de forma automática *******
-
+ # Creamos un reppositorio en github
+ # git init 
+ # git config --global user.email "surfmen@hotmail.com"
+ # git config --global user.name "Surfmen"
+ # git add *
+ # git commit -m "First commint"
 
 
 
