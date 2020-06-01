@@ -476,7 +476,12 @@
  # git config --global user.name "Surfmen"
  # git add *
  # git commit -m "First commint"
-
+ # git remote add origin https://github.com/Surfmen/Docker.git
+ # git push -u origin master
+ # git branch remote
+ # git bramch
+ # git push -u origin master
+ 
 
 
 
